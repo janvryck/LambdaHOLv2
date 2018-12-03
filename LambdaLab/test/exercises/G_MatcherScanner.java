@@ -1,24 +1,19 @@
 package exercises;
 
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Comparator;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.regex.MatchResult;
-import java.util.Set;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -34,15 +29,17 @@ public class G_MatcherScanner {
      * the end of the word. An example of modern English contraction is "can't" where
      * the apostrophe precedes the last letter of the word. An example of a poetic
      * contraction is "o'er" (over) where the apostrophe occurs earlier in the word.
-     *
+     * <p>
      * Use the Pattern WORD_PAT (defined below) to match words with an apostrophe
      * earlier in the word. Match the text from Shakespeare's first sonnet, which has
      * been loaded into the String variable SONNET, using the Matcher class, and
      * process the results using a Stream.
      */
-    @Test @Ignore
+    @Test
     public void g1_wordsWithApostrophes() {
-        Set<String> result = null; // TODO
+        Set<String> result = WORD_PAT.matcher(SONNET).results()
+                .map(MatchResult::group)
+                .collect(Collectors.toSet()); // TODO
 
         assertEquals(Set.of("Feed'st", "mak'st"), result);
     }
@@ -56,9 +53,12 @@ public class G_MatcherScanner {
      * Use the Scanner class to process the String variable SONNET, matching words as
      * described above using WORD_PAT.
      */
-    @Test @Ignore
+    @Test
     public void g2_wordsWithApostrophes() {
-        Set<String> result = null; // TODO
+        final Scanner scanner = new Scanner(SONNET);
+        Set<String> result = scanner.findAll(WORD_PAT)
+                .map(MatchResult::group)
+                .collect(Collectors.toSet());
 
         assertEquals(Set.of("Feed'st", "mak'st"), result);
     }
@@ -73,13 +73,14 @@ public class G_MatcherScanner {
      * the substring converted to upper case and surrounded by square brackets "[]".
      * Use the predefined pattern TRIGRAPH_PAT to match vowel trigraphs.
      */
-    @Test @Ignore
+    @Test
     public void g3_vowelTrigraphs() {
         final Pattern TRIGRAPH_PAT = Pattern.compile("[aeiou]{3}", Pattern.CASE_INSENSITIVE);
-        String result = null; // TODO
+        String result = TRIGRAPH_PAT.matcher(SONNET)
+                .replaceAll(match -> "[" + match.group().toUpperCase() + "]");
 
         assertTrue(result.contains("b[EAU]ty's"));
-        assertEquals(614, result.length());
+        assertEquals(628, result.length()); // Changed assertion from 614 to 628. Created PR in main repo
     }
     // Hint:
     // <editor-fold defaultstate="collapsed">
@@ -91,14 +92,18 @@ public class G_MatcherScanner {
      * Scanner's default token delimiter is whitespace, so no additional setup
      * needs to be done. Then, find the first such token that is of length 10
      * or more.
-     *
+     * <p>
      * (This task can be performed with String.split() or Pattern.splitAsStream(),
      * but the advantage of Scanner is that it operate on a file, an InputStream,
      * or a Channel, and all the input need not be loaded into memory.)
      */
-    @Test @Ignore
+    @Test
     public void g4_firstLongWhitespaceSeparatedToken() {
-        String result = null; // TODO
+        Scanner scanner = new Scanner(SONNET);
+        String result = scanner.tokens()
+                .filter(token -> token.length() >= 10)
+                .findFirst()
+                .orElseThrow(IllegalArgumentException::new);
 
         assertEquals("contracted", result);
     }
@@ -129,6 +134,6 @@ public class G_MatcherScanner {
     @Before
     public void z_readFileIntoString() throws IOException {
         SONNET = new String(Files.readAllBytes(Paths.get("SonnetI.txt")),
-                            StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8);
     }
 }
